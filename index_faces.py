@@ -4,7 +4,7 @@ import re
 import boto3 
 
 bucket_name = "BUCKETNAME"
-collection_id = "COLLECTIONNAME"
+collection_id = "COLLECTIONID"
 p = re.compile("0007.jpg")
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -14,17 +14,18 @@ all_objects = os.listdir(dir_path)
 
 rek_client=boto3.client('rekognition')
 
-for file_name in all_objects:
+for file_name in all_objects[100:]:
     if p.search(file_name):
         name_only, _ = file_name.split(".")
         name_only = name_only[:-1]
         for i in range(1,8):
-            this_name = name_only + str(i) + ".jpg"
+            this_name = "faces/" + name_only + str(i) + ".jpg"
             print(this_name)
             response=rek_client.index_faces(CollectionId=collection_id,
                                 Image={'S3Object':{'Bucket':bucket_name,'Name':this_name}},
-                                ExternalImageId=this_name,
+                                ExternalImageId=name_only,
+                                DetectionAttributes=["ALL"],
                                 MaxFaces=1,
                                 QualityFilter="AUTO",
-                                DetectionAttributes=['ALL'])
+                                )
             print(response)
